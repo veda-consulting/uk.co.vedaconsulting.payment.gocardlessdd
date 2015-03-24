@@ -149,6 +149,11 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
         this script.</p>';
       exit();
     }
+    
+    // Set $environment to 'production' if live. Default is 'sandbox'
+    if ($this->_mode == 'live') {
+      GoCardless::$environment = 'production';
+    }
 
     // Initialize GoCardless
     GoCardless::set_account_details($account_details);
