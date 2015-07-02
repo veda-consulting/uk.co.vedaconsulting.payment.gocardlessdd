@@ -110,6 +110,7 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
 
     $paymentProcessorType = CRM_Core_PseudoConstant::paymentProcessorType(false, null, 'name');
     $paymentProcessorTypeId = CRM_Utils_Array::key('Gocardless', $paymentProcessorType);
+    $domainID  = CRM_Core_Config::domainID();
 
       $sql  = " SELECT user_name ";
       $sql .= " ,      password ";
@@ -118,9 +119,16 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
       $sql .= " FROM civicrm_payment_processor ";
       $sql .= " WHERE payment_processor_type_id = %1 ";
       $sql .= " AND is_test= %2 ";
+      $sql .= " AND domain_id = %3 ";
+
+      $isTest = 0;
+      if ($this->_mode == 'live') {
+        $isTest = 1;
+      }
 
       $sql_params = array( 1 => array( $paymentProcessorTypeId, 'Integer' )
-                     , 2 => array( '0', 'Int' )
+                     , 2 => array( $isTest, 'Int' )
+                     , 3 => array( $domainID, 'Int' )
                      );
 
       $dao = CRM_Core_DAO::executeQuery( $sql, $sql_params);
