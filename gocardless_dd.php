@@ -101,7 +101,12 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
   function gocardless_dd_civicrm_xmlMenu( &$files ) {
     $files[] = dirname(__FILE__)."/xml/Menu/CustomTestForm.xml";
   }
-
+  
+  public function buildForm(&$form) {
+    require_once 'UK_Direct_Debit/Form/Main.php';
+    $collectionDaysArray = UK_Direct_Debit_Form_Main::getCollectionDaysOptions();
+    $form->add('select', 'preferred_collection_day', ts('Preferred Collection Day'), $collectionDaysArray, FALSE);
+  }
  function doDirectPayment(&$params) {
     CRM_Core_Error::fatal(ts('This function is not implemented'));
   }
@@ -171,7 +176,13 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
     $goCardLessParams['amount']           = $params['amount'];
     $goCardLessParams['interval_length']  = $params['frequency_interval'];
     $goCardLessParams['interval_unit']    = $params['frequency_unit'];
-
+    
+    if (!empty($params['preferred_collection_day'])) {
+      $preferredCollectionDay = $params['preferred_collection_day'];
+      $collectionDate = UK_Direct_Debit_Form_Main::firstCollectionDate( $preferredCollectionDay, null); 
+      // ISO8601 format.
+      $goCardLessParams['start_at'] = $collectionDate->format('c');
+    }	
 
     $url    = ( $component == 'event' ) ? 'civicrm/event/register' : 'civicrm/contribute/transact';
     $cancel = ( $component == 'event' ) ? '_qf_Register_display'   : '_qf_Main_display';
