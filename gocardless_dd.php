@@ -112,8 +112,6 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
   }
 
   function doTransferCheckout( &$params, $component ) {
-    CRM_Core_Error::debug_var('$params in payment processor', $params);
-    //die();
 
     $paymentProcessorType = CRM_Core_PseudoConstant::paymentProcessorType(false, null, 'name');
     $paymentProcessorTypeId = CRM_Utils_Array::key('Gocardless', $paymentProcessorType);
@@ -197,94 +195,6 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
       CRM_Core_Session::setStatus($error_msg, ts("Error"), "error");
        CRM_Utils_System::redirect($params['entryURL']);
     }
-    // Fail nicely if no access token set
-  
-    /*
-    $ch = curl_init('https://api-sandbox.gocardless.com/redirect_flows');
-    $options = array(
-                       CURLOPT_RETURNTRANSFER => true, // return web page
-                       CURLOPT_HEADER => false, // don't return headers
-                       CURLOPT_POST => true,
-                       CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-                       CURLOPT_USERAGENT => "XYZ Co's PHP iDD Client", // Let SmartDebit see who we are
-                       CURLOPT_SSL_VERIFYHOST => false,
-                       CURLOPT_SSL_VERIFYPEER => false,
-                     );
-    curl_setopt_array( $ch, $options );
-    curl_setopt($ch, CURLOPT_POSTFIELDS,$data);  //Post Fields
-
-
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    $server_output = curl_exec ($ch);
-    $response = json_decode($server_output, TRUE);
-    CRM_Core_Error::debug_var('$response', $response);
-    $header = curl_getinfo( $ch );
-    CRM_Core_Error::debug_var('$header', $header);
-    CRM_Utils_System::redirect($response['redirect_flows']['redirect_url']);
-   // die();
-   // curl_close ($ch);
-    /*
-    $account_details = array(
-      'app_id'        => $app_id,
-      'app_secret'    => $app_secret,
-      'merchant_id'   => $merchant_id,
-      'access_token'  => $access_token,
-    );
-
-    
-    // Set $environment to 'production' if live. Default is 'sandbox'
-    /*
-    if ($this->_mode == 'live') {
-      GoCardless::$environment = 'production';
-    }
-     
-     
-
-    // Initialize GoCardless
-    GoCardless::set_account_details($account_details);
-
-    $goCardLessParams = array();
-
-    $goCardLessParams['amount']           = $params['amount'];
-    $goCardLessParams['interval_length']  = $params['frequency_interval'];
-    $goCardLessParams['interval_unit']    = $params['frequency_unit'];
-    
-    if (!empty($params['preferred_collection_day'])) {
-      $preferredCollectionDay = $params['preferred_collection_day'];
-      $collectionDate = UK_Direct_Debit_Form_Main::firstCollectionDate( $preferredCollectionDay, null); 
-      // ISO8601 format.
-      $goCardLessParams['start_at'] = $collectionDate->format('c');
-    }	
-
-    $url    = ( $component == 'event' ) ? 'civicrm/event/register' : 'civicrm/contribute/transact';
-    $cancel = ( $component == 'event' ) ? '_qf_Register_display'   : '_qf_Main_display';
-    $returnURL = CRM_Utils_System::url( $url,
-                                         "_qf_ThankYou_display=1&qfKey={$params['qfKey']}"."&cid={$params['contactID']}",
-                                         true, null, false );
-
-    $goCardLessParams['redirect_uri'] = $returnURL;
-
-
-    $goCardLessParams['user'] = array(
-        'email'            => isset($params['email-5'])         ? $params['email-5'] : NULL,
-        'first_name'       => isset($params['first_name'])      ? $params['first_name']: NULL,
-        'last_name'        => isset($params['last_name'])       ? $params['last_name']: NULL,
-        'billing_address1' => isset($params['street_address'])  ? $params['street_address']: NULL,
-        'billing_town'     => isset($params['city'])            ? $params['city']: NULL,
-        'billing_postcode' => isset($params['postal_code'])     ? $params['postal_code']: NULL,
-        'country_code'     => 'GB'
-
-      );
-
-
-    // Allow further manipulation of the arguments via custom hooks ..
-    CRM_Utils_Hook::alterPaymentProcessorParams($this, $params, $goCardLessParams);
-
-    $subscription_url = GoCardless::new_subscription_url($goCardLessParams);
-    CRM_Utils_System::redirect($subscription_url);
-     * 
-     */
-    
 
   }
 
