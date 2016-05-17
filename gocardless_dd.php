@@ -149,10 +149,6 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
     $returnURL = CRM_Utils_System::url( $url,
                                          "_qf_ThankYou_display=1&qfKey={$params['qfKey']}"."&cid={$params['contactID']}",
                                          true, null, false );
-                                         
-    CRM_Core_Error::debug_var('$access_token', $access_token);
-    CRM_Core_Error::debug_var('$api_url', $api_url);
-    //die();
     
     if ($access_token && $api_url) {
       // Create redirect params
@@ -175,7 +171,6 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
       $header[] = 'Authorization: Bearer '.$access_token;
       
       $response = requestPostGocardless($api_url, $redirect_path, $header, $data);
-      CRM_Core_Error::debug_var('$response in first api call', $response);
       
       if (strtoupper($response["Status"] == 'OK') ) {
         CRM_Utils_System::redirect($response['redirect_flows']['redirect_url']);
