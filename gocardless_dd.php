@@ -2,7 +2,7 @@
 
 require_once 'UK_Direct_Debit/Form/Main.php';
 require_once 'CRM/Core/Payment.php';
-require_once 'lib/GoCardless.php';
+include("gocardless_includes.php");
 
 class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
 
@@ -112,42 +112,118 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
   }
 
   function doTransferCheckout( &$params, $component ) {
+    CRM_Core_Error::debug_var('$params in payment processor', $params);
+    //die();
 
     $paymentProcessorType = CRM_Core_PseudoConstant::paymentProcessorType(false, null, 'name');
     $paymentProcessorTypeId = CRM_Utils_Array::key('Gocardless', $paymentProcessorType);
     $domainID  = CRM_Core_Config::domainID();
 
-      $sql  = " SELECT user_name ";
-      $sql .= " ,      password ";
-      $sql .= " ,      signature ";
-      $sql .= " ,      subject ";
-      $sql .= " FROM civicrm_payment_processor ";
-      $sql .= " WHERE payment_processor_type_id = %1 ";
-      $sql .= " AND is_test= %2 ";
-      $sql .= " AND domain_id = %3 ";
+    $sql  = " SELECT user_name ";
+    $sql .= " ,      password ";
+    $sql .= " ,      signature ";
+    $sql .= " ,      subject ";
+    $sql .= " ,      url_api ";
+    $sql .= " FROM civicrm_payment_processor ";
+    $sql .= " WHERE payment_processor_type_id = %1 ";
+    $sql .= " AND is_test= %2 ";
+    $sql .= " AND domain_id = %3 ";
 
-      $isTest = 0;
-      if ($this->_mode == 'test') {
-        $isTest = 1;
+    $isTest = 0;
+    if ($this->_mode == 'test') {
+      $isTest = 1;
+    }
+
+    $sql_params = array( 1 => array( $paymentProcessorTypeId, 'Integer' )
+                   , 2 => array( $isTest, 'Int' )
+                   , 3 => array( $domainID, 'Int' )
+                   );
+
+    $dao = CRM_Core_DAO::executeQuery( $sql, $sql_params);
+
+    if ($dao->fetch()) {
+      $access_token = $dao->subject;
+      $api_url      = $dao->url_api;
+    }
+    
+    $url    = ( $component == 'event' ) ? 'civicrm/event/register' : 'civicrm/contribute/transact';
+    $cancel = ( $component == 'event' ) ? '_qf_Register_display'   : '_qf_Main_display';
+    $returnURL = CRM_Utils_System::url( $url,
+                                         "_qf_ThankYou_display=1&qfKey={$params['qfKey']}"."&cid={$params['contactID']}",
+                                         true, null, false );
+                                         
+    CRM_Core_Error::debug_var('$access_token', $access_token);
+    CRM_Core_Error::debug_var('$api_url', $api_url);
+    //die();
+    
+    if ($access_token && $api_url) {
+      // Create redirect params
+      $redirect_params = array(
+        "description"           => $params['description'],
+        "session_token"         => $params['qfKey'],
+        "success_redirect_url"  => $returnURL
+      );
+      // Create post data
+      $data = json_encode(array(
+        'redirect_flows' => (object)$redirect_params,
+      ));
+      // Create redirect path
+      $redirect_path = 'redirect_flows';
+      // Create header with access token
+      $header = array();
+      $header[] = 'GoCardless-Version: 2015-07-06';
+      $header[] = 'Accept: application/json';
+      $header[] = 'Content-Type: application/json';
+      $header[] = 'Authorization: Bearer '.$access_token;
+      
+      $response = requestPostGocardless($api_url, $redirect_path, $header, $data);
+      CRM_Core_Error::debug_var('$response in first api call', $response);
+      
+      if (strtoupper($response["Status"] == 'OK') ) {
+        CRM_Utils_System::redirect($response['redirect_flows']['redirect_url']);
+      } else {
+        CRM_Core_Error::debug_var('uk_co_vedaconsulting_payment_gocardlessdd api call response error', $response);
+        CRM_Core_Error::debug_var('uk_co_vedaconsulting_payment_gocardlessdd api post params $api_url ', $api_url);
+        CRM_Core_Error::debug_var('uk_co_vedaconsulting_payment_gocardlessdd api post params $redirect_path ', $redirect_path);
+        CRM_Core_Error::debug_var('uk_co_vedaconsulting_payment_gocardlessdd api post params $header ', $header);
+        CRM_Core_Error::debug_var('uk_co_vedaconsulting_payment_gocardlessdd api post params $data ', $data);
+        CRM_Core_Session::setStatus('Could not connect to Gocardless API', ts("Error"), "error");
+        CRM_Utils_System::redirect($params['entryURL']);
       }
-
-      $sql_params = array( 1 => array( $paymentProcessorTypeId, 'Integer' )
-                     , 2 => array( $isTest, 'Int' )
-                     , 3 => array( $domainID, 'Int' )
+      
+    } else {
+      $error_msg = '<p>First sign up to <a href="http://gocardless.com">GoCardless</a> and
+        crate your access token with read and write access from the Developer dashboard.</p>';
+      CRM_Core_Session::setStatus($error_msg, ts("Error"), "error");
+       CRM_Utils_System::redirect($params['entryURL']);
+    }
+    // Fail nicely if no access token set
+  
+    /*
+    $ch = curl_init('https://api-sandbox.gocardless.com/redirect_flows');
+    $options = array(
+                       CURLOPT_RETURNTRANSFER => true, // return web page
+                       CURLOPT_HEADER => false, // don't return headers
+                       CURLOPT_POST => true,
+                       CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+                       CURLOPT_USERAGENT => "XYZ Co's PHP iDD Client", // Let SmartDebit see who we are
+                       CURLOPT_SSL_VERIFYHOST => false,
+                       CURLOPT_SSL_VERIFYPEER => false,
                      );
-
-      $dao = CRM_Core_DAO::executeQuery( $sql, $sql_params);
-
-      if ($dao->fetch()) {
-
-          $app_id       = $dao->user_name;
-          $app_secret   = $dao->password;
-          $merchant_id  = $dao->signature;
-          $access_token = $dao->subject;
+    curl_setopt_array( $ch, $options );
+    curl_setopt($ch, CURLOPT_POSTFIELDS,$data);  //Post Fields
 
 
-      }
-
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    $server_output = curl_exec ($ch);
+    $response = json_decode($server_output, TRUE);
+    CRM_Core_Error::debug_var('$response', $response);
+    $header = curl_getinfo( $ch );
+    CRM_Core_Error::debug_var('$header', $header);
+    CRM_Utils_System::redirect($response['redirect_flows']['redirect_url']);
+   // die();
+   // curl_close ($ch);
+    /*
     $account_details = array(
       'app_id'        => $app_id,
       'app_secret'    => $app_secret,
@@ -155,18 +231,14 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
       'access_token'  => $access_token,
     );
 
-    // Fail nicely if no account details set
-    if ( ! $account_details['app_id'] && ! $account_details['app_secret']) {
-      echo '<p>First sign up to <a href="http://gocardless.com">GoCardless</a> and
-        copy your sandbox API credentials from the \'Developer\' tab into the top of
-        this script.</p>';
-      exit();
-    }
     
     // Set $environment to 'production' if live. Default is 'sandbox'
+    /*
     if ($this->_mode == 'live') {
       GoCardless::$environment = 'production';
     }
+     
+     
 
     // Initialize GoCardless
     GoCardless::set_account_details($account_details);
@@ -210,6 +282,9 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
 
     $subscription_url = GoCardless::new_subscription_url($goCardLessParams);
     CRM_Utils_System::redirect($subscription_url);
+     * 
+     */
+    
 
   }
 

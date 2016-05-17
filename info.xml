@@ -15,21 +15,18 @@
     <author>Veda Consulting</author>
     <email>kajan@vedaconsulting.co.uk</email>
   </maintainer>
-  <releaseDate>2015-11-13</releaseDate>
-  <version>1.1</version>
+  <releaseDate>2016-05-17</releaseDate>
+  <version>2.1</version>
   <develStage>stable</develStage>
   <compatibility><ver>4.6</ver></compatibility>
   <comments></comments>
   <typeInfo>
-   <userNameLabel>API ID</userNameLabel>
-   <passwordLabel>API Secret</passwordLabel>
-   <signatureLabel>Merchant ID</signatureLabel>
    <subjectLabel>Access Token</subjectLabel>
    <urlSiteDefault></urlSiteDefault>
-   <urlApiDefault>https://gocardless.com/</urlApiDefault>
+   <urlApiDefault>https://api.gocardless.com/</urlApiDefault>
    <urlRecurDefault></urlRecurDefault>
    <urlSiteTestDefault></urlSiteTestDefault>
-   <urlApiTestDefault>https://sandbox.gocardless.com/</urlApiTestDefault>
+   <urlApiTestDefault>https://api-sandbox.gocardless.com/</urlApiTestDefault>
    <urlRecurTestDefault></urlRecurTestDefault>
    <urlButtonDefault></urlButtonDefault>
    <urlButtonTestDefault></urlButtonTestDefault>
