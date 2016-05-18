@@ -10,13 +10,13 @@ CiviCRM can be integrated with GoCardless Payment Processor
 * Create Access Token in Gocardless Developer Dashboard, Make sure token has read and write permission when it is configured 
 ![Screenshot of gocardless dashboard](images/create_acess_token.png)
 * Configure new payment processor by selecting 'Gocardless (uk.co.vedaconsulting.payment.gocardlessdd) as Payment Processor Type in CiviCRM
-![Screenshot of integration civicrm](images/payment_proceesor_setup_civi.jpg)
+![Screenshot of integration civicrm](images/payment_proceesor_setup_civi.png)
 
 ### Usage ###
 
 * Setup CiviCRM Contribution page with gocardless payment processor
 
-* When user registers for that civiCRM Contribution, new subscription will be created in GOcardless 
+* When user registers for that civiCRM Contribution, new subscription will be created in Gocardless 
 
 ### Support ###
 
