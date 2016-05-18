@@ -140,7 +140,7 @@ class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
     $dao = CRM_Core_DAO::executeQuery( $sql, $sql_params);
 
     if ($dao->fetch()) {
-      $access_token = $dao->subject;
+      $access_token = $dao->user_name;
       $api_url      = $dao->url_api;
     }
     

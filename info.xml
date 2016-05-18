@@ -21,7 +21,10 @@
   <compatibility><ver>4.6</ver></compatibility>
   <comments></comments>
   <typeInfo>
-   <subjectLabel>Access Token</subjectLabel>
+   <userNameLabel>API Access Token</userNameLabel>
+   <passwordLabel></passwordLabel>
+   <signatureLabel></signatureLabel>
+   <subjectLabel></subjectLabel>
    <urlSiteDefault></urlSiteDefault>
    <urlApiDefault>https://api.gocardless.com/</urlApiDefault>
    <urlRecurDefault></urlRecurDefault>
