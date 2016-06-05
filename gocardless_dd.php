@@ -2,7 +2,7 @@
 
 require_once 'UK_Direct_Debit/Form/Main.php';
 require_once 'CRM/Core/Payment.php';
-include("gocardless_includes.php");
+require_once 'gocardless_includes.php';
 
 class uk_co_vedaconsulting_payment_gocardlessdd extends CRM_Core_Payment {
 

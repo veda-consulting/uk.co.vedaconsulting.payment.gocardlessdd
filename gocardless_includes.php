@@ -60,5 +60,3 @@ function requestPostGocardless($url, $path, $header, $data){
   return $resultsArray;
   
 } // END function requestPost()
-
-?>
